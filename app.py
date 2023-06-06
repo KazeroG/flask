@@ -5,8 +5,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_sqlalchemy import SQLAlchemy
-from mysql.connector import connect
+import mysql.connector
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,20 +19,21 @@ jwt = JWTManager(app)
 # Load environment variables from .env file
 load_dotenv()
 
-# Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-
-# Initialize database
-db = SQLAlchemy(app)
+# Database connection
+db_connection = mysql.connector.connect(
+    host=os.getenv('DB_HOST'),
+    user=os.getenv('DB_USER'),
+    password=os.getenv('DB_PASSWORD'),
+    database=os.getenv('DB_NAME')
+)
 
 # User model
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+class User:
+    def __init__(self, id, username, email, password):
+        self.id = id
+        self.username = username
+        self.email = email
+        self.password = password
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -46,18 +46,19 @@ def register():
             logger.error('Please provide username, email, and password')
             return make_response(jsonify({"error": "Please provide username, email, and password"}), 400)
 
+        cursor = db_connection.cursor()
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        new_user = User(username=username, email=email, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
+        insert_query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+        cursor.execute(insert_query, (username, email, hashed_password))
+        db_connection.commit()
 
         logger.info('User registered successfully')
         return jsonify({"message": "User registered successfully"}), 201
     except Exception as e:
-        db.session.rollback()
         logger.exception('An error occurred while registering user')
         return make_response(jsonify({"error": "An error occurred while registering user"}), 500)
+
 
 
 @app.route('/login', methods=['POST'])
