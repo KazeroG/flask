@@ -26,8 +26,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 # Initialize database
-db = SQLAlchemy(app, engine_options={"pool_pre_ping": True, "connect_args": {"charset": "utf8mb4", "use_unicode": True}})
-db.engine.connect()
+db = SQLAlchemy(app)
 
 # User model
 class User(db.Model):
@@ -59,6 +58,7 @@ def register():
         db.session.rollback()
         logger.exception('An error occurred while registering user')
         return make_response(jsonify({"error": "An error occurred while registering user"}), 500)
+
 
 @app.route('/login', methods=['POST'])
 def login():
