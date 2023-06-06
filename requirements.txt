@@ -8,4 +8,3 @@ python-dotenv
 tenacity
 flask_limiter
 mysql-connector-python
-mysqlclient
