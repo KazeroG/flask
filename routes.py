@@ -1,9 +1,19 @@
-# routes.py
-from flask import request, jsonify, make_response
+from flask import request, make_response, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models import db, User, bcrypt
-from logger import logger
-from llm_processor import process_prompt
+from app import app, db, bcrypt, logger
+from models import User
+from errors import *
+from langchain.llms import OpenAI
+from langchain.document_loaders import DirectoryLoader
+from langchain.vectorstores import Chroma
+from langchain.agents.agent_toolkits import (
+    create_vectorstore_agent,
+    VectorStoreToolkit,
+    VectorStoreInfo
+)
+
+# Create instance of OpenAI LLM
+llm = OpenAI(temperature=0.1, verbose=True)
 
 def register_routes(app):
     @app.route('/register', methods=['POST'])

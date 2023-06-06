@@ -10,3 +10,4 @@ flask_limiter
 mysql-connector-python
 gunicorn
 flask_migrate
+PyMySQL
