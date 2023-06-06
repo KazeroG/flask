@@ -15,6 +15,14 @@ from langchain.agents.agent_toolkits import (
 # Create instance of OpenAI LLM
 llm = OpenAI(temperature=0.1, verbose=True)
 
+# Define process_prompt function
+def process_prompt(prompt):
+    # Process the prompt and return a response and search results
+    # This is a placeholder implementation
+    response = prompt
+    search_results = ''
+    return response, search_results
+
 def register_routes(app):
     @app.route('/register', methods=['POST'])
     def register():
