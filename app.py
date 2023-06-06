@@ -6,8 +6,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_sqlalchemy import SQLAlchemy, create_engine
-from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -19,6 +18,7 @@ app = Flask(__name__)
 CORS(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
+limiter = Limiter(app)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,12 +29,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 # Initialize database
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-db = SQLAlchemy(app, engine=engine)
-migrate = Migrate(app, db)
-
-# Rate limiting
-limiter = Limiter(app)
+db = SQLAlchemy(app)
 
 # User model
 class User(db.Model):
@@ -43,6 +38,10 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
+
+# Create the database and tables
+with app.app_context():
+    db.create_all()
 
 @app.route('/register', methods=['POST'])
 def register():
