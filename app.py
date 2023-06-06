@@ -20,7 +20,7 @@ jwt = JWTManager(app)
 load_dotenv()
 
 # Database connection
-db_connection = mysql.connector.connect(
+db = mysql.connector.connect(
     host=os.getenv('DB_HOST'),
     user=os.getenv('DB_USER'),
     password=os.getenv('DB_PASSWORD'),
@@ -46,20 +46,18 @@ def register():
             logger.error('Please provide username, email, and password')
             return make_response(jsonify({"error": "Please provide username, email, and password"}), 400)
 
-        cursor = db_connection.cursor()
+        cursor = db.cursor()
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         insert_query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
         cursor.execute(insert_query, (username, email, hashed_password))
-        db_connection.commit()
+        db.commit()
 
         logger.info('User registered successfully')
         return jsonify({"message": "User registered successfully"}), 201
     except Exception as e:
         logger.exception('An error occurred while registering user')
         return make_response(jsonify({"error": "An error occurred while registering user"}), 500)
-
-
 
 @app.route('/login', methods=['POST'])
 def login():
