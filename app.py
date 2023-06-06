@@ -1,5 +1,4 @@
 import os
-import time
 import logging
 from flask import Flask, request, make_response, jsonify
 from dotenv import load_dotenv
@@ -7,8 +6,7 @@ from flask_cors import CORS, cross_origin
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_sqlalchemy import SQLAlchemy
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from mysql.connector import connect
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +16,6 @@ app = Flask(__name__)
 CORS(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-limiter = Limiter(app)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,19 +26,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 # Initialize database
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, engine_options={"pool_pre_ping": True, "connect_args": {"charset": "utf8mb4", "use_unicode": True}})
+db.engine.connect()
 
 # User model
 class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
-
-# Create the database and tables
-with app.app_context():
-    db.create_all()
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -148,6 +141,7 @@ def handle_too_many_requests(e):
 def handle_server_error(e):
     logger.exception('Server error')
     return make_response(jsonify({"error": "Server error"}), 500)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=os.getenv("PORT", default=5000))
