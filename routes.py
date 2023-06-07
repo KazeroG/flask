@@ -133,17 +133,26 @@ def process_prompt():
         # Create instance of OpenAI LLM
         llm = OpenAI(temperature=0.1, verbose=True)
 
-        # Create and load Directory Loader
-        loader = DirectoryLoader(directory_path='docs')
-        # Split pages from pdf 
-        pages = loader.load_and_split()
+        # Create Directory Loader
+        loader = DirectoryLoader()
+
+        # Set the directory path
+        directory_path = '/docs'
+        
+        # Check if the directory path is valid
+        if not os.path.isdir(directory_path):
+            return make_response(jsonify({"error": "Invalid directory path"}), 400)
+
+        # Split pages from PDF files in the directory
+        pages = loader.load_and_split(directory_path)
+
         # Load documents into vector database aka ChromaDB
-        store = Chroma.from_documents(pages, collection_name='doc_directory')
+        store = Chroma.from_documents(pages, collection_name='docs_directory')
 
         # Create vectorstore info object - metadata repo?
         vectorstore_info = VectorStoreInfo(
-            name="doc_directory",
-            description="data",
+            name="docs_directory",
+            description="data docs directory",
             vectorstore=store
         )
         # Convert the document store into a langchain toolkit
@@ -157,11 +166,9 @@ def process_prompt():
         )
         
         response = agent_executor.run(prompt)
-        search = store.similarity_search_with_score(prompt) 
 
         return jsonify({
             'response': response,
-            'search_results': search[0][0].page_content
         })
 
     except Exception as e:
