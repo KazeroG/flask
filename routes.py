@@ -149,8 +149,11 @@ def process_prompt():
         # Load documents into vector database aka ChromaDB
         store = Chroma()
 
+        documents = []
         for page in pages:
-            store.add_text(page.page_content, metadata={"page_number": page.page_number})
+            documents.append((page.page_content, {"page_number": page.page_number}))
+
+        store.add_documents(documents, collection_name='docs_directory')
 
         # Create vectorstore info object
         vectorstore_info = VectorStoreInfo(
