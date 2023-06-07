@@ -1,7 +1,7 @@
 from flask import request, make_response, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import app, db, bcrypt, limiter  # Import the 'limiter' object
-from models import User
+from models import Users
 from langchain.llms import OpenAI  # Import the 'OpenAI' class
 from langchain.document_loaders import DirectoryLoader
 from langchain.vectorstores import Chroma
@@ -62,12 +62,12 @@ def register():
 
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        new_user = User(username=username, email=email, password=hashed_password)
+        new_user = Users(username=username, email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
 
-        app.logger.info('User registered successfully')
-        return jsonify({"message": "User registered successfully"}), 201
+        app.logger.info('Users registered successfully')
+        return jsonify({"message": "Users registered successfully"}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -80,7 +80,7 @@ def login():
         email = request.json.get('email')
         password = request.json.get('password')
 
-        user = User.query.filter_by(email=email).first()
+        user = Users.query.filter_by(email=email).first()
 
         if not user or not bcrypt.check_password_hash(user.password, password):
             app.logger.error('Invalid email or password')
@@ -107,7 +107,7 @@ def protected():
 @app.route('/users', methods=['GET'])
 def get_users():
     try:
-        users = User.query.all()
+        users = Users.query.all()
         user_list = [{"id": user.id, "username": user.username, "email": user.email} for user in users]
         return jsonify(user_list)
 
@@ -118,16 +118,16 @@ def get_users():
 @app.route('/users/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
     try:
-        user = User.query.get(user_id)
+        user = Users.query.get(user_id)
         if not user:
-            app.logger.error(f'User not found: {user_id}')
-            return make_response(jsonify({"error": "User not found"}), 404)
+            app.logger.error(f'Users not found: {user_id}')
+            return make_response(jsonify({"error": "Users not found"}), 404)
 
         db.session.delete(user)
         db.session.commit()
 
-        app.logger.info('User deleted successfully')
-        return jsonify({"message": "User deleted successfully"}), 200
+        app.logger.info('Users deleted successfully')
+        return jsonify({"message": "Users deleted successfully"}), 200
 
     except Exception as e:
         db.session.rollback()
