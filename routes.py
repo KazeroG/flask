@@ -134,7 +134,7 @@ def process_prompt():
         llm = OpenAI(temperature=0.1, verbose=True)
 
         # Set the directory path
-        directory_path = '/docs'
+        directory_path = 'docs'
         
         # Check if the directory path is valid
         if not os.path.isdir(directory_path):
