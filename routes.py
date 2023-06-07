@@ -147,14 +147,18 @@ def process_prompt():
         pages = loader.load_and_split()
 
         # Load documents into vector database aka ChromaDB
-        store = Chroma.from_documents(pages, collection_name='docs_directory')
+        store = Chroma()
 
-        # Create vectorstore info object - metadata repo?
+        for page in pages:
+            store.add_text(page.page_content, metadata={"page_number": page.page_number})
+
+        # Create vectorstore info object
         vectorstore_info = VectorStoreInfo(
             name="docs_directory",
             description="docs directory",
             vectorstore=store
         )
+
         # Convert the document store into a langchain toolkit
         toolkit = VectorStoreToolkit(vectorstore_info=vectorstore_info)
 
@@ -170,7 +174,7 @@ def process_prompt():
 
         return jsonify({
             'response': response,
-            'search_results': search[0][0].page_content
+            'search_results': search[0][0].metadata['page_number']
         })
 
     except Exception as e:
