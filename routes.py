@@ -151,7 +151,9 @@ def process_prompt():
 
         documents = []
         for page in pages:
-            documents.append((page.page_content, {"page_number": page.page_number}))
+            if page:
+                documents.append((page.page_content, {"page_number": page.page_number}))
+
 
         store.add_documents(documents, collection_name='docs_directory')
 
