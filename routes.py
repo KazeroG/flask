@@ -39,7 +39,7 @@ def handle_server_error(e):
     app.logger.exception('Server error')
     return make_response(jsonify({"error": "Server error"}), 500)
 
-@app.route('/register', methods=['POST'])
+@app.route('https://flask-production-4552.up.railway.app/register', methods=['POST'])
 def register():
     try:
         username = request.json.get('username')
@@ -64,7 +64,7 @@ def register():
         app.logger.exception('An error occurred while registering user')
         return make_response(jsonify({"error": "An error occurred while registering user"}), 500)
 
-@app.route('/login', methods=['POST'])
+@app.route('https://flask-production-4552.up.railway.app/login', methods=['POST'])
 def login():
     try:
         email = request.json.get('email')
@@ -83,7 +83,7 @@ def login():
         app.logger.exception('An error occurred while logging in')
         return make_response(jsonify({"error": "An error occurred while logging in"}), 500)
 
-@app.route('/protected', methods=['GET'])
+@app.route('https://flask-production-4552.up.railway.app/protected', methods=['GET'])
 @jwt_required()  # Authentication required
 def protected():
     try:
@@ -94,7 +94,7 @@ def protected():
         app.logger.exception('An error occurred while accessing protected route')
         return make_response(jsonify({"error": "An error occurred while accessing protected route"}), 500)
 
-@app.route('/users', methods=['GET'])
+@app.route('https://flask-production-4552.up.railway.app/users', methods=['GET'])
 def get_users():
     try:
         users = Users.query.all()
@@ -105,7 +105,7 @@ def get_users():
         app.logger.exception('An error occurred while fetching users')
         return make_response(jsonify({"error": "An error occurred while fetching users"}), 500)
 
-@app.route('/users/<user_id>', methods=['DELETE'])
+@app.route('https://flask-production-4552.up.railway.app/usershttps://flask-production-4552.up.railway.app/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
     try:
         user = Users.query.get(user_id)
@@ -125,7 +125,7 @@ def delete_user(user_id):
         return make_response(jsonify({"error": "An error occurred while deleting user"}), 500)
     
 
-@app.route('/process_prompt', methods=['POST'])
+@app.route('https://flask-production-4552.up.railway.app/process_prompt', methods=['POST'])
 def process_prompt():
     try:
         prompt = request.json['prompt']
@@ -134,7 +134,7 @@ def process_prompt():
         llm = OpenAI(temperature=0.1, verbose=True)
 
         # Set the directory path
-        directory_path = '/docs'
+        directory_path = 'https://flask-production-4552.up.railway.app/docs'
         
         # Check if the directory path is valid
         if not os.path.isdir(directory_path):
