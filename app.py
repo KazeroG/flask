@@ -22,11 +22,11 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 # Set API key for OpenAI service
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 
 # Configure database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize database
 db = SQLAlchemy(app)
@@ -37,5 +37,5 @@ limiter = Limiter(app)
 
 from routes import *
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
