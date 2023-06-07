@@ -13,3 +13,4 @@ flask_migrate
 PyMySQL
 openai
 requests
+unstructured
