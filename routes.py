@@ -2,7 +2,6 @@ from flask import request, make_response, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import app, db, bcrypt, limiter  # Import the 'limiter' object
 from models import User
-from errors import *
 from langchain.llms import OpenAI  # Import the 'OpenAI' class
 from langchain.document_loaders import DirectoryLoader
 from langchain.vectorstores import Chroma
