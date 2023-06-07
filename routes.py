@@ -1,27 +1,17 @@
 from flask import request, make_response, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from app import app, db, bcrypt, limiter  # Import the 'limiter' object
+from app import app, db, bcrypt, limiter
 from models import Users
-from langchain.llms import OpenAI  # Import the 'OpenAI' class
-from langchain.document_loaders import DirectoryLoader
+import os
+from langchain.llms import OpenAI
+from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma
 from langchain.agents.agent_toolkits import (
     create_vectorstore_agent,
     VectorStoreToolkit,
     VectorStoreInfo
 )
-
-# Create instance of OpenAI LLM
-llm = OpenAI(temperature=0.1, verbose=True)
-
-# Define process_prompt function
-def process_prompt(prompt):
-    # Process the prompt and return a response and search results
-    # This is a placeholder implementation
-    response = prompt
-    search_results = ''
-    return response, search_results
-
+from langchain.document_loaders import DirectoryLoader
 
 # Error handling middleware
 @app.errorhandler(400)
@@ -133,20 +123,47 @@ def delete_user(user_id):
         db.session.rollback()
         app.logger.exception('An error occurred while deleting user')
         return make_response(jsonify({"error": "An error occurred while deleting user"}), 500)
+    
 
-# Rate limit the '/process_prompt' endpoint
 @app.route('/process_prompt', methods=['POST'])
-@limiter.limit("10/minute")  # Limit to 10 requests per minute
-def process():
+def process_prompt():
     try:
         prompt = request.json['prompt']
-        response, search_results = process_prompt(prompt)
+        
+        # Create instance of OpenAI LLM
+        llm = OpenAI(temperature=0.1, verbose=True)
+
+        # Create and load Directory Loader
+        loader = DirectoryLoader(directory_path='docs')
+        # Split pages from pdf 
+        pages = loader.load_and_split()
+        # Load documents into vector database aka ChromaDB
+        store = Chroma.from_documents(pages, collection_name='doc_directory')
+
+        # Create vectorstore info object - metadata repo?
+        vectorstore_info = VectorStoreInfo(
+            name="doc_directory",
+            description="data",
+            vectorstore=store
+        )
+        # Convert the document store into a langchain toolkit
+        toolkit = VectorStoreToolkit(vectorstore_info=vectorstore_info)
+
+        # Add the toolkit to an end-to-end LC
+        agent_executor = create_vectorstore_agent(
+            llm=llm,
+            toolkit=toolkit,
+            verbose=True
+        )
+        
+        response = agent_executor.run(prompt)
+        search = store.similarity_search_with_score(prompt) 
+
         return jsonify({
             'response': response,
-            'search_results': search_results
+            'search_results': search[0][0].page_content
         })
 
     except Exception as e:
         app.logger.exception('An error occurred while processing prompt')
         return make_response(jsonify({"error": "An error occurred while processing prompt"}), 500)
-
