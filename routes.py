@@ -156,7 +156,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 llm = OpenAI(temperature=0.1, verbose=True)
 
 # Create and load Directory Loader
-loader = DirectoryLoader('path_to_your_directory')
+loader = DirectoryLoader('docs')
 
 # Load all documents in the directory
 documents = loader.load_all()
