@@ -21,9 +21,6 @@ CORS(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-# Set API key for OpenAI service
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
