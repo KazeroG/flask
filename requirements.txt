@@ -15,4 +15,8 @@ openai
 requests
 unstructured
 pdf2image
-chromadb
+chromadb 
+tiktoken 
+pypdf 
+sentence_transformers 
+InstructorEmbedding
