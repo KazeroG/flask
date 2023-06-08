@@ -1,8 +1,8 @@
+import os
 from flask import request, make_response, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import app, db, bcrypt, limiter
 from models import Users
-import os
 from langchain.llms import OpenAI
 from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma
@@ -11,7 +11,8 @@ from langchain.agents.agent_toolkits import (
     VectorStoreToolkit,
     VectorStoreInfo,
 )
-from langchain.document_loaders import DirectoryLoader
+from langchain.document_loaders import PyPDFLoader
+from langchain.storage import Chroma
 
 # Error handling middleware
 @app.errorhandler(400)
@@ -148,21 +149,20 @@ def delete_user(user_id):
             jsonify({"error": "An error occurred while deleting user"}), 500
         )
 
-
-# Set APIkey for OpenAI Service
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
 # Create instance of OpenAI LLM
 llm = OpenAI(temperature=0.1, verbose=True)
 
-# Create and load Directory Loader
-loader = DirectoryLoader('docs')
+
+# Specify the directory
+directory_path = 'docs'
 
 # Load all documents in the directory
 documents = []
-for filename in loader.filepaths:
-    file_loader = PyPDFLoader(filename)
-    documents.extend(file_loader.load_and_split())
+for filename in os.listdir(directory_path):
+    if filename.endswith('.pdf'):  # Ensure we're working with PDF files
+        full_path = os.path.join(directory_path, filename)
+        file_loader = PyPDFLoader(full_path)
+        documents.extend(file_loader.load_and_split())
 
 # Load documents into vector database aka ChromaDB
 store = Chroma.from_documents(documents, collection_name='pdf_collection')
@@ -181,7 +181,7 @@ toolkit = VectorStoreToolkit(vectorstore_info=vectorstore_info)
 agent_executor = create_vectorstore_agent(llm=llm, toolkit=toolkit, verbose=True)
 
 
-@app.route("/api/process", methods=["POST"])
+@app.route("/ask", methods=["POST"])
 def gpt_banking():
     prompt = request.json.get("prompt", None)
     if prompt:
