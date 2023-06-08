@@ -12,7 +12,6 @@ from langchain.agents.agent_toolkits import (
     VectorStoreInfo,
 )
 from langchain.document_loaders import PyPDFLoader
-from langchain.storage import Chroma
 
 # Error handling middleware
 @app.errorhandler(400)
