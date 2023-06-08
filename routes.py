@@ -159,10 +159,14 @@ llm = OpenAI(temperature=0.1, verbose=True)
 loader = DirectoryLoader('docs')
 
 # Load all documents in the directory
-documents = loader.load_all()
+documents = []
+for filename in loader.filepaths:
+    file_loader = PyPDFLoader(filename)
+    documents.extend(file_loader.load_and_split())
 
 # Load documents into vector database aka ChromaDB
 store = Chroma.from_documents(documents, collection_name='pdf_collection')
+
 
 # Create vectorstore info object - metadata repo?
 vectorstore_info = VectorStoreInfo(
